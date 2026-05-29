@@ -1,8 +1,11 @@
-# 重复文件检查工具
+# Duplicate File Finder - 重复文件查找器
+
+![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
 
 一个基于 Web 的重复文件查找和清理工具，支持大目录扫描、MD5 精确匹配和批量删除确认。
 
-## 功能特点
+## 功能特性
 
 - **目录空间统计** - 显示总文件数、文件夹数、总大小和文件类型分布
 - **重复文件检测** - 使用 MD5 哈希精确识别内容相同的文件
@@ -26,13 +29,33 @@ pip install -r requirements.txt
 python main.py
 ```
 
+## 项目结构
+
+```
+duplicate-file-finder/
+├── main.py             # 主程序入口
+├── scanner.py          # 文件扫描器
+├── requirements.txt    # Python 依赖
+├── run.bat             # Windows 启动脚本
+└── static/
+    ├── index.html      # 主页面
+    ├── style.css       # 样式文件
+    └── app.js          # 前端交互
+```
+
+## 技术栈
+
+- **后端**: Python 内置 HTTP Server
+- **前端**: 原生 HTML/CSS/JavaScript
+- **算法**: MD5 文件哈希比对
+
 ## 使用说明
 
 1. 在扫描目录框中输入要检查的文件夹路径
-2. 点击"开始扫描"按钮
+2. 点击「开始扫描」按钮
 3. 等待扫描完成，查看统计信息和重复文件列表
-4. 勾选要删除的重复文件（可使用"智能选择"快速选择标记的副本）
-5. 点击"删除选中"确认删除
+4. 勾选要删除的重复文件（可使用「智能选择」快速标记副本）
+5. 点击「删除选中」确认删除
 
 ## 注意事项
 
