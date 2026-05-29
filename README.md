@@ -1,6 +1,27 @@
 # Python Tools Collection
 
+![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)
+![Repo Size](https://img.shields.io/github/repo-size/gaoguangjun/item)
+![Last Commit](https://img.shields.io/github/last-commit/gaoguangjun/item)
+![Issues](https://img.shields.io/github/issues/gaoguangjun/item)
+![Stars](https://img.shields.io/github/stars/gaoguangjun/item?style=social)
+
 一套实用的 Python 工具集合，涵盖 SLA 计算、项目管理、文件查找和媒体处理等场景。
+
+---
+
+<p align="center">
+  <a href="#1-sla-calculator---sla-计算器">SLA 计算器</a> &nbsp;|&nbsp;
+  <a href="#2-project-manager---项目管理器">项目管理器</a> &nbsp;|&nbsp;
+  <a href="#3-duplicate-file-finder---重复文件查找器">文件查找器</a> &nbsp;|&nbsp;
+  <a href="#4-video-audio-extractor---视频音频提取器">音频提取器</a> &nbsp;|&nbsp;
+  <a href="#5-ebook2audiobook---电子书转有声书">电子书转有声书</a>
+</p>
+
+---
 
 ## 项目列表
 
