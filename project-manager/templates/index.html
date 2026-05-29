@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目管理器</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>项目管理器</h1>
+            <div class="scan-info">
+                <span id="scan-dir">扫描目录: 加载中...</span>
+                <button id="refresh-btn" class="btn btn-primary">
+                    <span class="icon">↻</span> 刷新
+                </button>
+            </div>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="projects">
+                <span class="icon">📁</span> 项目
+            </button>
+            <button class="tab-btn" data-tab="sysprocesses">
+                <span class="icon">⚡</span> 系统进程
+            </button>
+            <button class="tab-btn" data-tab="software">
+                <span class="icon">💻</span> 软件
+            </button>
+        </nav>
+
+        <main>
+            <!-- 项目面板 -->
+            <section id="projects-panel" class="panel active">
+                <div class="search-bar">
+                    <input type="text" id="project-search" placeholder="搜索项目...">
+                    <select id="type-filter">
+                        <option value="">全部类型</option>
+                        <option value="python">Python</option>
+                        <option value="node">Node.js</option>
+                        <option value="java">Java</option>
+                        <option value="go">Go</option>
+                        <option value="git">Git</option>
+                        <option value="generic">其他</option>
+                    </select>
+                </div>
+                <div id="projects-list" class="item-list">
+                    <div class="loading">加载中...</div>
+                </div>
+            </section>
+
+            <!-- 系统进程面板 -->
+            <section id="sysprocesses-panel" class="panel">
+                <div class="search-bar">
+                    <input type="text" id="sysproc-search" placeholder="搜索进程...">
+                    <select id="sysproc-type-filter">
+                        <option value="">全部类型</option>
+                        <option value="Python">Python</option>
+                        <option value="Node.js">Node.js</option>
+                        <option value="Java">Java</option>
+                        <option value="Go">Go</option>
+                        <option value=".NET">.NET</option>
+                    </select>
+                </div>
+                <div class="sysproc-list" id="sysproc-list">
+                    <div class="loading">加载中...</div>
+                </div>
+            </section>
+
+            <!-- 软件面板 -->
+            <section id="software-panel" class="panel">
+                <div class="search-bar">
+                    <input type="text" id="software-search" placeholder="搜索软件...">
+                </div>
+                <div id="software-list" class="item-list">
+                    <div class="loading">加载中...</div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 详情弹窗 -->
+        <div id="modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modal-title">项目详情</h2>
+                    <button class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

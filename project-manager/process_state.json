@@ -1,0 +1,46 @@
+{
+  "D:\\高云曦\\duplicate-file-finder": {
+    "path": "D:\\\\高云曦\\\\duplicate-file-finder",
+    "name": "duplicate-file-finder",
+    "pid": 17748,
+    "type": "fastapi",
+    "command": "python D:\\高云曦\\duplicate-file-finder\\main.py",
+    "status": "stopped",
+    "start_time": "2026-05-14T12:29:15.722782",
+    "port": 8000,
+    "log_file": "D:\\高云曦\\project-manager\\logs_1778732955.txt"
+  },
+  "D:\\高云曦\\video-audio-extractor": {
+    "path": "D:\\\\高云曦\\\\video-audio-extractor",
+    "name": "video-audio-extractor",
+    "pid": 64264,
+    "type": "flask",
+    "command": "python D:\\高云曦\\video-audio-extractor\\app.py",
+    "status": "stopped",
+    "start_time": "2026-05-16T21:14:29.354748",
+    "port": null,
+    "log_file": "D:\\高云曦\\project-manager\\logs_1778937268.txt"
+  },
+  "C:\\Users\\yunxi\\Desktop\\item\\video-audio-extractor": {
+    "path": "C:\\\\Users\\\\yunxi\\\\Desktop\\\\item\\\\video-audio-extractor",
+    "name": "video-audio-extractor",
+    "pid": 119760,
+    "type": "flask",
+    "command": "python C:\\Users\\yunxi\\Desktop\\item\\video-audio-extractor\\app.py",
+    "status": "running",
+    "start_time": "2026-05-22T14:05:19.441723",
+    "port": null,
+    "log_file": "C:\\Users\\yunxi\\Desktop\\item\\project-manager\\logs_1779429918.txt"
+  },
+  "C:\\Users\\yunxi\\Desktop\\item\\duplicate-file-finder": {
+    "path": "C:\\\\Users\\\\yunxi\\\\Desktop\\\\item\\\\duplicate-file-finder",
+    "name": "duplicate-file-finder",
+    "pid": 130144,
+    "type": "fastapi",
+    "command": "python C:\\Users\\yunxi\\Desktop\\item\\duplicate-file-finder\\main.py",
+    "status": "running",
+    "start_time": "2026-05-22T14:04:35.873910",
+    "port": 8000,
+    "log_file": "C:\\Users\\yunxi\\Desktop\\item\\project-manager\\logs_1779429875.txt"
+  }
+}

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重复文件检查工具</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>重复文件检查工具</h1>
+            <p class="subtitle">扫描目录，查找并清理重复文件</p>
+        </header>
+
+        <!-- 扫描设置区域 -->
+        <section class="scan-section">
+            <div class="input-group">
+                <label for="directory">扫描目录：</label>
+                <input type="text" id="directory" placeholder="点击浏览选择目录" readonly />
+                <button id="browseBtn" class="btn-secondary">浏览...</button>
+            </div>
+            <div class="input-group">
+                <label for="maxFiles">最大文件数（可选）：</label>
+                <input type="number" id="maxFiles" placeholder="留空表示不限制" min="1" />
+            </div>
+            <div class="button-group">
+                <button id="scanBtn" class="btn-primary">开始扫描</button>
+                <button id="stopBtn" class="btn-danger hidden">停止扫描</button>
+            </div>
+
+            <!-- 系统工具 -->
+            <div class="system-tools">
+                <h4>系统工具</h4>
+                <div class="tool-item">
+                    <div class="tool-info">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                        </svg>
+                        <span>回收站</span>
+                    </div>
+                    <button id="viewRecycleBinBtn" class="btn-small btn-primary-outline">查看</button>
+                </div>
+                <p class="tool-desc">查看或清空系统回收站</p>
+            </div>
+        </section>
+
+        <!-- 扫描进度 -->
+        <section id="progressSection" class="progress-section hidden">
+            <div class="progress-bar">
+                <div id="progressBar" class="progress-fill"></div>
+            </div>
+            <p id="progressText">准备中...</p>
+        </section>
+
+        <!-- 统计信息 -->
+        <section id="statsSection" class="stats-section hidden">
+            <h2>扫描结果统计</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalFiles">0</div>
+                    <div class="stat-label">总文件数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalFolders">0</div>
+                    <div class="stat-label">总文件夹数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalSize">0 B</div>
+                    <div class="stat-label">总大小</div>
+                </div>
+                <div class="stat-card highlight">
+                    <div class="stat-value" id="duplicateGroups">0</div>
+                    <div class="stat-label">重复文件组</div>
+                </div>
+                <div class="stat-card highlight">
+                    <div class="stat-value" id="recoverableSpace">0 B</div>
+                    <div class="stat-label">可释放空间</div>
+                </div>
+            </div>
+
+            <!-- 文件类型统计 -->
+            <div class="file-types">
+                <h3>文件类型分布</h3>
+                <div id="fileTypeList" class="file-type-list"></div>
+            </div>
+        </section>
+
+        <!-- 重复文件列表 -->
+        <section id="duplicatesSection" class="duplicates-section hidden">
+            <div class="section-header">
+                <h2>重复文件列表</h2>
+                <div class="actions">
+                    <button id="selectAllBtn" class="btn-small">全选</button>
+                    <button id="deselectAllBtn" class="btn-small">取消全选</button>
+                    <button id="selectSmartBtn" class="btn-small">智能选择</button>
+                    <button id="deleteSelectedBtn" class="btn-danger">删除选中</button>
+                    <button id="exportBtn" class="btn-secondary">导出报告</button>
+                </div>
+            </div>
+            <div id="duplicatesList" class="duplicates-list"></div>
+        </section>
+
+        <!-- 消息提示 -->
+        <div id="toast" class="toast hidden"></div>
+
+        <!-- 目录浏览对话框 -->
+        <div id="browseDialog" class="dialog-overlay hidden">
+            <div class="dialog">
+                <div class="dialog-header">
+                    <h3>选择目录</h3>
+                    <button id="closeDialogBtn" class="dialog-close">&times;</button>
+                </div>
+                <div class="dialog-body">
+                    <!-- 驱动器列表 -->
+                    <div id="drivesList" class="drives-list hidden">
+                        <h4>驱动器</h4>
+                        <div id="drivesContainer"></div>
+                    </div>
+                    <!-- 目录列表 -->
+                    <div id="directoriesList" class="directories-list hidden">
+                        <div class="path-bar">
+                            <span class="path-label">当前路径:</span>
+                            <span id="currentPath" class="path-value"></span>
+                        </div>
+                        <div id="directoriesContainer" class="directories-container"></div>
+                    </div>
+                    <!-- 加载中 -->
+                    <div id="browseLoading" class="loading-spinner hidden">
+                        <div class="spinner"></div>
+                        <p>加载中...</p>
+                    </div>
+                </div>
+                <div class="dialog-footer">
+                    <button id="selectDirBtn" class="btn-primary">选择此目录</button>
+                    <button id="backToDrivesBtn" class="btn-secondary hidden">返回驱动器</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 文件列表对话框 -->
+        <div id="filesDialog" class="dialog-overlay hidden">
+            <div class="dialog dialog-large">
+                <div class="dialog-header">
+                    <h3 id="filesDialogTitle">文件列表</h3>
+                    <button id="closeFilesDialogBtn" class="dialog-close">&times;</button>
+                </div>
+                <div class="dialog-body">
+                    <!-- 工具栏 -->
+                    <div class="files-toolbar">
+                        <div class="files-count">
+                            共 <span id="filesTotalCount">0</span> 个文件
+                        </div>
+                        <div class="files-actions">
+                            <select id="filesSortSelect">
+                                <option value="size-desc">按大小 (大→小)</option>
+                                <option value="size-asc">按大小 (小→大)</option>
+                                <option value="name-asc">按名称 (A→Z)</option>
+                                <option value="name-desc">按名称 (Z→A)</option>
+                            </select>
+                            <input type="text" id="filesSearchInput" placeholder="搜索文件..." />
+                        </div>
+                    </div>
+                    <!-- 文件列表 -->
+                    <div id="filesListContainer" class="files-list-container"></div>
+                    <!-- 分页 -->
+                    <div class="files-pagination">
+                        <button id="filesPrevBtn" class="btn-small" disabled>上一页</button>
+                        <span id="filesPageInfo">第 1 页</span>
+                        <button id="filesNextBtn" class="btn-small">下一页</button>
+                    </div>
+                </div>
+                <div class="dialog-footer">
+                    <button id="closeFilesBtn" class="btn-secondary">关闭</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 删除进度对话框 -->
+        <div id="deleteProgressDialog" class="dialog-overlay hidden">
+            <div class="dialog dialog-small">
+                <div class="dialog-header">
+                    <h3>删除文件</h3>
+                </div>
+                <div class="dialog-body">
+                    <div class="delete-progress-container">
+                        <div class="progress-bar">
+                            <div id="deleteProgressBar" class="progress-fill"></div>
+                        </div>
+                        <p id="deleteProgressText">准备删除...</p>
+                        <div class="delete-stats">
+                            <span class="delete-stat">
+                                <span class="delete-stat-label">总计:</span>
+                                <span id="deleteTotal" class="delete-stat-value">0</span>
+                            </span>
+                            <span class="delete-stat">
+                                <span class="delete-stat-label">成功:</span>
+                                <span id="deleteSuccess" class="delete-stat-value success">0</span>
+                            </span>
+                            <span class="delete-stat">
+                                <span class="delete-stat-label">失败:</span>
+                                <span id="deleteFailed" class="delete-stat-value error">0</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="dialog-footer">
+                    <button id="closeDeleteProgressBtn" class="btn-secondary hidden">关闭</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 回收站对话框 -->
+        <div id="recycleBinDialog" class="dialog-overlay hidden">
+            <div class="dialog dialog-large">
+                <div class="dialog-header">
+                    <h3>回收站</h3>
+                    <button id="closeRecycleBinDialogBtn" class="dialog-close">&times;</button>
+                </div>
+                <div class="dialog-body">
+                    <!-- 回收站统计 -->
+                    <div class="recycle-bin-stats">
+                        <div class="recycle-stat-item">
+                            <span class="recycle-stat-value" id="recycleBinCount">0</span>
+                            <span class="recycle-stat-label">文件数量</span>
+                        </div>
+                        <div class="recycle-stat-item">
+                            <span class="recycle-stat-value" id="recycleBinSize">0 B</span>
+                            <span class="recycle-stat-label">占用空间</span>
+                        </div>
+                    </div>
+
+                    <!-- 回收站文件列表 -->
+                    <div class="recycle-files-container">
+                        <div id="recycleFilesList" class="files-list"></div>
+                    </div>
+
+                    <!-- 加载状态 -->
+                    <div id="recycleLoading" class="loading-spinner hidden">
+                        <div class="spinner"></div>
+                        <p>加载中...</p>
+                    </div>
+
+                    <!-- 空状态 -->
+                    <div id="recycleEmpty" class="files-empty hidden">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                        </svg>
+                        <p>回收站为空</p>
+                    </div>
+                </div>
+                <div class="dialog-footer">
+                    <button id="refreshRecycleBinBtn" class="btn-secondary">刷新</button>
+                    <button id="emptyRecycleBinConfirmBtn" class="btn-danger">清空回收站</button>
+                    <button id="closeRecycleBinBtn" class="btn-secondary">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

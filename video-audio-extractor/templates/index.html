@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频音频提取器</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>视频音频提取器</h1>
+            <p class="subtitle">从视频中提取音频，支持多种格式</p>
+        </header>
+
+        <main>
+            <form id="extractForm" class="upload-form">
+                <!-- 选择方式 -->
+                <div class="form-section">
+                    <div class="select-mode-tabs">
+                        <button type="button" class="mode-tab active" data-mode="file">
+                            <span class="tab-icon">📄</span> 选择文件
+                        </button>
+                        <button type="button" class="mode-tab" data-mode="folder">
+                            <span class="tab-icon">📁</span> 选择文件夹
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 文件选择区域 -->
+                <div class="form-section" id="fileSelectSection">
+                    <label class="section-title">
+                        <span class="icon">📹</span> 选择视频文件
+                    </label>
+                    <div class="dropzone" id="dropzone">
+                        <input type="file" id="videoFiles" name="videos" multiple accept=".mp4,.avi,.mov,.mkv,.webm,.flv,.wmv,.m4v,.mpeg,.mpg" hidden>
+                        <div class="dropzone-content">
+                            <div class="dropzone-icon">📹</div>
+                            <p>拖拽文件到这里或 <span class="browse-link">点击选择</span></p>
+                            <p class="dropzone-hint">支持多个文件，无大小限制</p>
+                        </div>
+                    </div>
+                    <div class="file-list" id="fileList"></div>
+                </div>
+
+                <!-- 文件夹选择区域 -->
+                <div class="form-section" id="folderSelectSection" style="display: none;">
+                    <label class="section-title">
+                        <span class="icon">📁</span> 选择视频文件夹
+                    </label>
+                    <div class="folder-selector" id="folderSelector">
+                        <input type="file" id="folderInput" name="folder" webkitdirectory directory multiple hidden>
+                        <div class="folder-selector-content">
+                            <div class="folder-icon">📂</div>
+                            <p>点击选择包含视频的文件夹</p>
+                            <p class="folder-hint">将自动识别文件夹内的所有视频文件</p>
+                        </div>
+                    </div>
+                    <div class="folder-info" id="folderInfo" style="display: none;">
+                        <div class="folder-path" id="folderPath"></div>
+                        <div class="folder-stats" id="folderStats"></div>
+                    </div>
+                    <div class="file-list" id="folderFileList"></div>
+                </div>
+
+                <!-- 格式选择 -->
+                <div class="form-section">
+                    <label class="section-title">
+                        <span class="icon">🎵</span> 输出格式
+                    </label>
+                    <div class="format-options">
+                        {% for code, name in audio_formats.items() %}
+                        <label class="format-option {{ 'selected' if code == 'mp3' else ''}}" data-format="{{ code }}">
+                            <input type="radio" name="audio_format" value="{{ code }}" {{ 'checked' if code == 'mp3' else '' }}>
+                            <span class="format-name">{{ name }}</span>
+                            <span class="format-ext">.{{ code }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- 提交按钮 -->
+                <div class="form-section">
+                    <button type="submit" class="btn-primary" id="submitBtn">
+                        <span class="btn-text">开始提取</span>
+                        <span class="btn-loader"></span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- 结果区域 -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <h2>提取结果</h2>
+                <div class="results-summary" id="resultsSummary"></div>
+                <button class="btn-batch-download" id="batchDownloadBtn" style="display: none;">
+                    <span class="btn-icon">📦</span> 打包下载全部 (ZIP)
+                </button>
+                <div class="results-list" id="resultsList"></div>
+                <button class="btn-secondary" id="newExtractionBtn">继续提取</button>
+            </div>
+        </main>
+
+        <footer>
+            <p>支持的视频格式: MP4, AVI, MOV, MKV, WebM, FLV, WMV, M4V, MPEG, MPG</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

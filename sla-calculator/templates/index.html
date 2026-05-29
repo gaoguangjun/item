@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLA 计算器 - 服务等级协议计算工具</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏导航 -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <path d="M16 2L4 8v10c0 7 6 13 12 14 6-1 12-7 12-14V8L16 2z" stroke="currentColor" stroke-width="2"/>
+                        <path d="M16 10v12M10 16h12" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>SLA 计算器</span>
+                </div>
+            </div>
+            <div class="nav-menu">
+                <button class="nav-item active" data-tab="uptime">
+                    <span class="icon">📊</span>
+                    <span>可用性计算</span>
+                </button>
+                <button class="nav-item" data-tab="compare">
+                    <span class="icon">📈</span>
+                    <span>SLA 对比</span>
+                </button>
+                <button class="nav-item" data-tab="credit">
+                    <span class="icon">💰</span>
+                    <span>赔偿计算</span>
+                </button>
+                <button class="nav-item" data-tab="actual">
+                    <span class="icon">🔧</span>
+                    <span>实际可用性</span>
+                </button>
+                <button class="nav-item" data-tab="reverse">
+                    <span class="icon">🔄</span>
+                    <span>反向计算</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 可用性计算 -->
+            <section class="tab-content active" id="tab-uptime">
+                <div class="section-header">
+                    <h1>正常运行时间计算器</h1>
+                    <p>根据 SLA 等级计算允许的停机时间</p>
+                </div>
+
+                <div class="calculator-card">
+                    <div class="input-group">
+                        <label>正常运行时间百分比</label>
+                        <div class="slider-container">
+                            <input type="range" id="uptime-slider" min="90" max="99.9999" step="0.01" value="99.9">
+                            <input type="number" id="uptime-input" min="90" max="99.9999" step="0.01" value="99.9">
+                            <span class="unit">%</span>
+                        </div>
+                    </div>
+
+                    <div class="sla-presets">
+                        <span class="preset-label">快速选择:</span>
+                        <button class="preset-btn" data-value="99">99%</button>
+                        <button class="preset-btn" data-value="99.9">99.9%</button>
+                        <button class="preset-btn" data-value="99.99">99.99%</button>
+                        <button class="preset-btn" data-value="99.999">99.999%</button>
+                    </div>
+                </div>
+
+                <div class="results-grid">
+                    <div class="result-card" data-period="day">
+                        <div class="period-name">每天</div>
+                        <div class="downtime-value">--</div>
+                        <div class="downtime-compact"></div>
+                    </div>
+                    <div class="result-card" data-period="week">
+                        <div class="period-name">每周</div>
+                        <div class="downtime-value">--</div>
+                        <div class="downtime-compact"></div>
+                    </div>
+                    <div class="result-card" data-period="month">
+                        <div class="period-name">每月</div>
+                        <div class="downtime-value">--</div>
+                        <div class="downtime-compact"></div>
+                    </div>
+                    <div class="result-card" data-period="quarter">
+                        <div class="period-name">每季度</div>
+                        <div class="downtime-value">--</div>
+                        <div class="downtime-compact"></div>
+                    </div>
+                    <div class="result-card" data-period="year">
+                        <div class="period-name">每年</div>
+                        <div class="downtime-value">--</div>
+                        <div class="downtime-compact"></div>
+                    </div>
+                </div>
+
+                <div class="sla-level-badge" id="sla-badge">
+                    <span class="badge-label">SLA 等级:</span>
+                    <span class="badge-value">--</span>
+                </div>
+            </section>
+
+            <!-- SLA 对比 -->
+            <section class="tab-content" id="tab-compare">
+                <div class="section-header">
+                    <h1>SLA 等级对比</h1>
+                    <p>比较不同 SLA 等级的停机时间差异</p>
+                </div>
+
+                <div class="compare-card">
+                    <div class="compare-levels">
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" class="sla-checkbox" value="99" checked>
+                            <span>99% - 高可用</span>
+                        </label>
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" class="sla-checkbox" value="99.9" checked>
+                            <span>99.9% - 极高可用</span>
+                        </label>
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" class="sla-checkbox" value="99.99" checked>
+                            <span>99.99% - 近乎完美</span>
+                        </label>
+                        <label class="checkbox-wrapper">
+                            <input type="checkbox" class="sla-checkbox" value="99.999">
+                            <span>99.999% - 完美可用</span>
+                        </label>
+                    </div>
+                    <button class="btn btn-primary" id="compare-btn">对比</button>
+                </div>
+
+                <div class="compare-results">
+                    <table class="compare-table">
+                        <thead>
+                            <tr>
+                                <th>SLA 等级</th>
+                                <th>每天停机</th>
+                                <th>每月停机</th>
+                                <th>每年停机</th>
+                            </tr>
+                        </thead>
+                        <tbody id="compare-tbody">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 赔偿计算 -->
+            <section class="tab-content" id="tab-credit">
+                <div class="section-header">
+                    <h1>SLA 赔偿计算器</h1>
+                    <p>根据实际服务可用性计算赔偿金额</p>
+                </div>
+
+                <div class="credit-calculator">
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label>承诺 SLA 等级 (%)</label>
+                            <input type="number" id="credit-sla" value="99.9" step="0.01" min="90" max="100">
+                        </div>
+                        <div class="input-group">
+                            <label>实际正常运行时间 (%)</label>
+                            <input type="number" id="credit-actual" value="99.5" step="0.01" min="0" max="100">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>月服务费用 (¥)</label>
+                        <input type="number" id="credit-fee" value="1000" min="0">
+                    </div>
+                    <button class="btn btn-primary" id="credit-calculate-btn">计算赔偿</button>
+                </div>
+
+                <div class="credit-result" id="credit-result">
+                    <div class="credit-status" id="credit-status"></div>
+                    <div class="credit-amounts">
+                        <div class="amount-item">
+                            <span class="label">赔偿比例</span>
+                            <span class="value" id="credit-percent">--%</span>
+                        </div>
+                        <div class="amount-item">
+                            <span class="label">赔偿金额</span>
+                            <span class="value" id="credit-money">¥0</span>
+                        </div>
+                    </div>
+                    <div class="credit-message" id="credit-message"></div>
+                </div>
+            </section>
+
+            <!-- 实际可用性 -->
+            <section class="tab-content" id="tab-actual">
+                <div class="section-header">
+                    <h1>实际可用性计算</h1>
+                    <p>根据总时间和实际停机时间计算可用性百分比</p>
+                </div>
+
+                <div class="actual-calculator">
+                    <div class="input-group">
+                        <label>统计周期</label>
+                        <select id="actual-period">
+                            <option value="43200">月 (30天)</option>
+                            <option value="10080">周 (7天)</option>
+                            <option value="1440">天 (24小时)</option>
+                            <option value="525600">年 (365天)</option>
+                            <option value="custom">自定义</option>
+                        </select>
+                    </div>
+                    <div class="input-group" id="custom-minutes-group" style="display: none;">
+                        <label>自定义总分钟数</label>
+                        <input type="number" id="actual-total-minutes" value="43200" min="1">
+                    </div>
+                    <div class="input-group">
+                        <label>停机时间 (分钟)</label>
+                        <input type="number" id="actual-downtime" value="60" min="0">
+                    </div>
+                    <button class="btn btn-primary" id="actual-calculate-btn">计算</button>
+                </div>
+
+                <div class="actual-result" id="actual-result">
+                    <div class="uptime-percentage">
+                        <span class="value" id="actual-uptime-pct">--%</span>
+                        <span class="label">正常运行时间</span>
+                    </div>
+                    <div class="actual-downtime">
+                        <span class="label">实际停机:</span>
+                        <span class="value" id="actual-downtime-str">--</span>
+                    </div>
+                    <div class="closest-sla">
+                        <span class="label">最接近 SLA 等级:</span>
+                        <span class="value" id="actual-closest-sla">--</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 反向计算 -->
+            <section class="tab-content" id="tab-reverse">
+                <div class="section-header">
+                    <h1>反向 SLA 计算</h1>
+                    <p>根据允许的停机时间计算需要的正常运行时间百分比</p>
+                </div>
+
+                <div class="reverse-calculator">
+                    <div class="input-group">
+                        <label>时间周期</label>
+                        <select id="reverse-period">
+                            <option value="day">天</option>
+                            <option value="week" selected>周</option>
+                            <option value="month">月</option>
+                            <option value="quarter">季度</option>
+                            <option value="year">年</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>允许停机时间 (秒)</label>
+                        <div class="time-inputs">
+                            <input type="number" id="reverse-seconds" value="300" min="0" placeholder="秒">
+                            <div class="time-converter">
+                                <input type="number" id="reverse-hours" value="0" min="0" placeholder="小时">
+                                <span>小时</span>
+                                <input type="number" id="reverse-minutes" value="5" min="0" placeholder="分钟">
+                                <span>分钟</span>
+                                <button class="btn btn-secondary" id="convert-time-btn" type="button">转换为秒</button>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="reverse-calculate-btn">计算所需 SLA</button>
+                </div>
+
+                <div class="reverse-result" id="reverse-result">
+                    <div class="required-uptime">
+                        <span class="label">需要达到的正常运行时间</span>
+                        <span class="value" id="reverse-uptime">--%</span>
+                    </div>
+                    <div class="reverse-sla">
+                        <span class="label">最接近 SLA 等级:</span>
+                        <span class="value" id="reverse-sla">--</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
