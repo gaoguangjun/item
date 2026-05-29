@@ -12,3 +12,5 @@ output/
 tmp/
 installed
 .installed
+data/
+*.db

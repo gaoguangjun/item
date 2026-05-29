@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Game Arcade - AI 游戏乐园</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                        <rect x="2" y="2" width="24" height="24" rx="4" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="10" cy="12" r="2" fill="currentColor"/>
+                        <circle cx="18" cy="12" r="2" fill="currentColor"/>
+                        <path d="M8 18c0 0 2 3 6 3s6-3 6-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>AI 游戏乐园</span>
+                </div>
+            </div>
+            <div class="nav-menu">
+                <button class="nav-item active" data-tab="gallery">
+                    <span class="nav-icon">&#x1F3AE;</span> 游戏大厅
+                </button>
+                <button class="nav-item" data-tab="create">
+                    <span class="nav-icon">&#x2728;</span> 创建游戏
+                </button>
+                <button class="nav-item" data-tab="mygames">
+                    <span class="nav-icon">&#x1F4C1;</span> 我的作品
+                </button>
+                <button class="nav-item" data-tab="profile">
+                    <span class="nav-icon">&#x1F464;</span> 个人中心
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Gallery -->
+            <section class="panel active" id="panel-gallery">
+                <div class="panel-header">
+                    <h1>游戏大厅</h1>
+                    <p>发现和游玩各种 AI 生成的游戏</p>
+                </div>
+                <div class="gallery-toolbar">
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="搜索游戏...">
+                    </div>
+                    <div class="filter-bar">
+                        <div class="sort-tabs">
+                            <button class="sort-btn active" data-sort="trending">热门趋势</button>
+                            <button class="sort-btn" data-sort="popular">最多点赞</button>
+                            <button class="sort-btn" data-sort="newest">最新创建</button>
+                        </div>
+                        <select id="category-filter">
+                            <option value="">全部分类</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="game-grid" id="game-grid"></div>
+                <div class="empty-state" id="gallery-empty" style="display:none">
+                    <p>暂无游戏，去创建一个吧！</p>
+                </div>
+            </section>
+
+            <!-- Create -->
+            <section class="panel" id="panel-create">
+                <div class="panel-header">
+                    <h1>创建游戏</h1>
+                    <p>用文字描述你想创建的游戏，AI 帮你生成</p>
+                </div>
+                <div class="create-card">
+                    <div class="form-group">
+                        <label>游戏描述</label>
+                        <textarea id="game-prompt" rows="4" placeholder="描述你想创建的游戏，例如：一个太空射击游戏，玩家控制飞船躲避陨石并射击外星人..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>游戏名称</label>
+                            <input type="text" id="game-title" placeholder="留空自动生成">
+                        </div>
+                        <div class="form-group">
+                            <label>游戏分类</label>
+                            <select id="game-category"></select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-lg" id="generate-btn">生成游戏</button>
+                </div>
+                <div class="preview-card" id="preview-card" style="display:none">
+                    <div class="preview-header">
+                        <h3>游戏预览</h3>
+                        <div class="preview-actions">
+                            <button class="btn btn-secondary" id="regenerate-btn">重新生成</button>
+                            <button class="btn btn-primary" id="save-game-btn">保存游戏</button>
+                        </div>
+                    </div>
+                    <div class="preview-iframe-wrap">
+                        <iframe id="preview-iframe" sandbox="allow-scripts"></iframe>
+                    </div>
+                </div>
+                <div class="loading-overlay" id="generate-loading" style="display:none">
+                    <div class="spinner"></div>
+                    <p>AI 正在生成游戏代码...</p>
+                </div>
+            </section>
+
+            <!-- My Games -->
+            <section class="panel" id="panel-mygames">
+                <div class="panel-header">
+                    <h1>我的作品</h1>
+                    <p>管理你创建的游戏</p>
+                </div>
+                <div class="game-grid" id="mygames-grid"></div>
+                <div class="empty-state" id="mygames-empty" style="display:none">
+                    <p>你还没有创建游戏，去试试吧！</p>
+                </div>
+            </section>
+
+            <!-- Profile -->
+            <section class="panel" id="panel-profile">
+                <div class="panel-header">
+                    <h1>个人中心</h1>
+                </div>
+                <div class="profile-card">
+                    <div class="profile-avatar" id="profile-avatar"></div>
+                    <div class="profile-info">
+                        <div class="profile-name-row">
+                            <span class="profile-name" id="profile-name"></span>
+                            <button class="btn btn-secondary btn-sm" id="edit-name-btn">编辑</button>
+                        </div>
+                        <div class="profile-edit-row" id="edit-name-row" style="display:none">
+                            <input type="text" id="edit-name-input">
+                            <button class="btn btn-primary btn-sm" id="save-name-btn">保存</button>
+                            <button class="btn btn-secondary btn-sm" id="cancel-name-btn">取消</button>
+                        </div>
+                    </div>
+                    <div class="profile-stats" id="profile-stats">
+                        <div class="stat"><span class="stat-value" id="stat-games">0</span><span class="stat-label">创建游戏</span></div>
+                        <div class="stat"><span class="stat-value" id="stat-likes">0</span><span class="stat-label">获赞数</span></div>
+                        <div class="stat"><span class="stat-value" id="stat-plays">0</span><span class="stat-label">游玩数</span></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Game Player Modal -->
+    <div class="modal-overlay" id="player-modal" style="display:none">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span id="modal-game-title"></span>
+                    <span class="modal-creator" id="modal-game-creator"></span>
+                </div>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <iframe id="game-iframe" sandbox="allow-scripts"></iframe>
+            </div>
+            <div class="modal-footer">
+                <div class="modal-stats">
+                    <span id="modal-plays">0 次游玩</span>
+                    <span id="modal-likes">0 赞</span>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" id="modal-like-btn">点赞</button>
+                    <button class="btn btn-secondary" id="modal-share-btn">分享</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="edit-modal" style="display:none">
+        <div class="modal-box modal-box-sm">
+            <div class="modal-header">
+                <h3>编辑游戏</h3>
+                <button class="modal-close" id="edit-modal-close">&times;</button>
+            </div>
+            <div class="modal-body modal-body-form">
+                <div class="form-group">
+                    <label>游戏名称</label>
+                    <input type="text" id="edit-title">
+                </div>
+                <div class="form-group">
+                    <label>描述</label>
+                    <textarea id="edit-desc" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>分类</label>
+                    <select id="edit-category"></select>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="edit-public" checked> 公开显示
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="edit-save-btn">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

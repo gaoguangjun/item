@@ -9,12 +9,13 @@
 ![Issues](https://img.shields.io/github/issues/gaoguangjun/item)
 ![Stars](https://img.shields.io/github/stars/gaoguangjun/item?style=social)
 
-一套实用的 Python 工具集合，涵盖 SLA 计算、项目管理、文件查找和媒体处理等场景。
+一套实用的 Python 工具集合，涵盖 AI 游戏创建、SLA 计算、项目管理、文件查找和媒体处理等场景。
 
 ---
 
 <p align="center">
-  <a href="#1-sla-calculator---sla-计算器">SLA 计算器</a> &nbsp;|&nbsp;
+  <a href="#1-ai-game-arcade---ai-游戏乐园">AI 游戏乐园</a> &nbsp;|&nbsp;
+  <a href="#2-sla-calculator---sla-计算器">SLA 计算器</a> &nbsp;|&nbsp;
   <a href="#2-project-manager---项目管理器">项目管理器</a> &nbsp;|&nbsp;
   <a href="#3-duplicate-file-finder---重复文件查找器">文件查找器</a> &nbsp;|&nbsp;
   <a href="#4-video-audio-extractor---视频音频提取器">音频提取器</a> &nbsp;|&nbsp;
@@ -25,7 +26,27 @@
 
 ## 项目列表
 
-### 1. SLA Calculator - SLA 计算器
+### 1. AI Game Arcade - AI 游戏乐园
+
+AI 驱动的游戏创建与游玩平台，输入文字描述即可生成可玩的 HTML5 游戏。
+
+**功能特性：**
+- AI 文字描述生成游戏（支持 OpenAI/Claude/本地模型）
+- 游戏大厅（浏览、搜索、分类、排序）
+- 内置游戏播放器（沙盒化 iframe）
+- 点赞、分享、游玩统计
+- 4 个内置 Demo 游戏
+
+```bash
+cd ai-game-arcade
+pip install -r requirements.txt
+python app.py
+# 访问 http://localhost:5002
+```
+
+---
+
+### 2. SLA Calculator - SLA 计算器
 
 服务等级协议（SLA）计算工具，帮助计算服务可用性、停机时间和赔偿金额。
 
@@ -45,7 +66,7 @@ python app.py
 
 ---
 
-### 2. Project Manager - 项目管理器
+### 3. Project Manager - 项目管理器
 
 自动检索和管理本地项目与软件的 Web 应用。
 
@@ -64,7 +85,7 @@ python app.py
 
 ---
 
-### 3. Duplicate File Finder - 重复文件查找器
+### 4. Duplicate File Finder - 重复文件查找器
 
 扫描指定目录，查找并管理重复文件。
 
@@ -82,7 +103,7 @@ python main.py
 
 ---
 
-### 4. Video Audio Extractor - 视频音频提取器
+### 5. Video Audio Extractor - 视频音频提取器
 
 从视频文件中提取音频轨道，支持多种视频格式。
 
@@ -100,7 +121,7 @@ python app.py
 
 ---
 
-### 5. Ebook2Audiobook - 电子书转有声书
+### 6. Ebook2Audiobook - 电子书转有声书
 
 将电子书转换为有声读物，支持多种 TTS 引擎。
 
@@ -120,6 +141,7 @@ python app.py
 
 | 项目 | 后端 | 前端 | 部署 |
 |------|------|------|------|
+| AI Game Arcade | Flask + SQLite | JavaScript + CSS3 | - |
 | SLA Calculator | Flask | JavaScript + CSS3 | - |
 | Project Manager | Flask | JavaScript + CSS3 | - |
 | Duplicate File Finder | Python Tkinter | - | - |
