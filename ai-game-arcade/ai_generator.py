@@ -55,23 +55,6 @@ def generate_game(prompt, category=''):
             code = result['choices'][0]['message']['content'].strip()
             return _clean_game_code(code)
 
-        user_msg = f'请创建一个游戏：{prompt}'
-        if category:
-            user_msg += f'\n游戏类型：{category}'
-
-        response = client.chat.completions.create(
-            model=LLM_MODEL,
-            messages=[
-                {'role': 'system', 'content': SYSTEM_PROMPT},
-                {'role': 'user', 'content': user_msg}
-            ],
-            max_tokens=4096,
-            temperature=0.8,
-        )
-
-        code = response.choices[0].message.content.strip()
-        return _clean_game_code(code)
-
     except Exception as e:
         print(f'AI generation error: {e}')
         return _fallback_game(prompt)

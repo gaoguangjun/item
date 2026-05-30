@@ -88,6 +88,10 @@
                         </div>
                     </div>
                     <button class="btn btn-primary btn-lg" id="generate-btn">生成游戏</button>
+                    <div class="loading-overlay" id="generate-loading" style="display:none">
+                        <div class="spinner"></div>
+                        <p>AI 正在生成游戏代码...</p>
+                    </div>
                 </div>
                 <div class="preview-card" id="preview-card" style="display:none">
                     <div class="preview-header">
@@ -100,10 +104,6 @@
                     <div class="preview-iframe-wrap">
                         <iframe id="preview-iframe" sandbox="allow-scripts"></iframe>
                     </div>
-                </div>
-                <div class="loading-overlay" id="generate-loading" style="display:none">
-                    <div class="spinner"></div>
-                    <p>AI 正在生成游戏代码...</p>
                 </div>
             </section>
 

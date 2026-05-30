@@ -177,7 +177,8 @@ async function generateGame() {
     if (!prompt) { showToast('请输入游戏描述'); return; }
 
     const category = document.getElementById('game-category').value;
-    document.getElementById('generate-loading').style.display = 'block';
+    const loading = document.getElementById('generate-loading');
+    loading.style.display = 'flex';
     document.getElementById('preview-card').style.display = 'none';
 
     try {
@@ -187,6 +188,12 @@ async function generateGame() {
             body: JSON.stringify({prompt, category})
         });
         const data = await res.json();
+
+        if (data.error) {
+            showToast(data.error);
+            return;
+        }
+
         generatedCode = data.game_code;
 
         const iframe = document.getElementById('preview-iframe');
@@ -197,7 +204,7 @@ async function generateGame() {
     } catch (e) {
         showToast('生成失败，请重试');
     }
-    document.getElementById('generate-loading').style.display = 'none';
+    loading.style.display = 'none';
 }
 
 async function saveGame() {

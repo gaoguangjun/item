@@ -7,12 +7,18 @@ import uuid
 import zipfile
 from io import BytesIO
 from flask import Flask, render_template, request, send_file, jsonify
+from flask_cors import CORS
 from moviepy.editor import VideoFileClip
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = None  # 无文件大小限制
+app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['OUTPUT_FOLDER'] = 'output'
+app.config['JSON_AS_ASCII'] = False
+CORS(app)
+
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(app.config['OUTPUT_FOLDER'], exist_ok=True)
 
 # 支持的视频格式
 SUPPORTED_VIDEO_FORMATS = {
@@ -234,8 +240,4 @@ def batch_download_zip():
 
 
 if __name__ == '__main__':
-    # 确保目录存在
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    os.makedirs(app.config['OUTPUT_FOLDER'], exist_ok=True)
-
     app.run(debug=True, host='0.0.0.0', port=8001)

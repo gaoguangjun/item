@@ -19,8 +19,17 @@
         </header>
 
         <nav class="tabs">
-            <button class="tab-btn active" data-tab="projects">
+            <button class="tab-btn active" data-tab="dashboard">
+                <span class="icon">📊</span> 仪表板
+            </button>
+            <button class="tab-btn" data-tab="services">
+                <span class="icon">🚀</span> 服务面板
+            </button>
+            <button class="tab-btn" data-tab="projects">
                 <span class="icon">📁</span> 项目
+            </button>
+            <button class="tab-btn" data-tab="favorites">
+                <span class="icon">⭐</span> 收藏
             </button>
             <button class="tab-btn" data-tab="sysprocesses">
                 <span class="icon">⚡</span> 系统进程
@@ -28,9 +37,17 @@
             <button class="tab-btn" data-tab="software">
                 <span class="icon">💻</span> 软件
             </button>
+            <button class="tab-btn" data-tab="settings">
+                <span class="icon">⚙️</span> 设置
+            </button>
         </nav>
 
         <main>
+            <!-- 服务面板 -->
+            <section id="services-panel" class="panel">
+                <div id="services-grid" class="services-grid"></div>
+            </section>
+
             <!-- 项目面板 -->
             <section id="projects-panel" class="panel active">
                 <div class="search-bar">
@@ -75,6 +92,125 @@
                 </div>
                 <div id="software-list" class="item-list">
                     <div class="loading">加载中...</div>
+                </div>
+            </section>
+
+            <!-- 仪表板面板 -->
+            <section id="dashboard-panel" class="panel">
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">📁</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-total">0</div>
+                            <div class="stat-label">总项目数</div>
+                        </div>
+                    </div>
+                    <div class="stat-card running">
+                        <div class="stat-icon">▶️</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-running">0</div>
+                            <div class="stat-label">运行中</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stopped">
+                        <div class="stat-icon">⏹</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-stopped">0</div>
+                            <div class="stat-label">已停止</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💾</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="stat-size">0 MB</div>
+                            <div class="stat-label">总大小</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-sections">
+                    <div class="dashboard-section">
+                        <h3>项目类型分布</h3>
+                        <div id="type-distribution" class="type-distribution">
+                            <div class="loading">加载中...</div>
+                        </div>
+                    </div>
+                    <div class="dashboard-section">
+                        <h3>批量操作</h3>
+                        <div class="batch-actions">
+                            <button class="btn btn-success" id="batch-start-all">
+                                <span class="icon">▶️</span> 启动所有
+                            </button>
+                            <button class="btn btn-warning" id="batch-stop-all">
+                                <span class="icon">⏹</span> 停止所有
+                            </button>
+                            <button class="btn btn-primary" id="batch-refresh">
+                                <span class="icon">↻</span> 刷新状态
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-section">
+                    <h3>最近访问</h3>
+                    <div id="recent-projects" class="item-list">
+                        <div class="loading">加载中...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 收藏面板 -->
+            <section id="favorites-panel" class="panel">
+                <div class="search-bar">
+                    <input type="text" id="favorites-search" placeholder="搜索收藏...">
+                </div>
+                <div id="favorites-list" class="item-list">
+                    <div class="empty-state">
+                        <span class="icon">⭐</span>
+                        <p>暂无收藏项目</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 设置面板 -->
+            <section id="settings-panel" class="panel">
+                <div class="settings-container">
+                    <div class="setting-group">
+                        <h3>扫描设置</h3>
+                        <div class="setting-item">
+                            <label>扫描目录</label>
+                            <input type="text" id="setting-root-path" placeholder="输入要扫描的目录路径">
+                            <button class="btn btn-primary" id="save-root-path">保存</button>
+                        </div>
+                        <div class="setting-item">
+                            <label>刷新间隔 (秒)</label>
+                            <input type="number" id="setting-refresh-interval" min="1" max="60" value="5">
+                            <button class="btn btn-primary" id="save-refresh-interval">保存</button>
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <h3>外观设置</h3>
+                        <div class="setting-item">
+                            <label>主题</label>
+                            <select id="setting-theme">
+                                <option value="dark">深色</option>
+                                <option value="light">浅色</option>
+                            </select>
+                            <button class="btn btn-primary" id="save-theme">保存</button>
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <h3>数据管理</h3>
+                        <button class="btn btn-secondary" id="export-config">
+                            <span class="icon">📤</span> 导出配置
+                        </button>
+                        <button class="btn btn-secondary" id="import-config">
+                            <span class="icon">📥</span> 导入配置
+                        </button>
+                        <button class="btn btn-danger" id="reset-config">
+                            <span class="icon">🔄</span> 重置配置
+                        </button>
+                    </div>
                 </div>
             </section>
         </main>

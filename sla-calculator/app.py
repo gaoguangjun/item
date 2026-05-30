@@ -4,9 +4,12 @@ SLA Calculator - 服务等级协议计算器
 """
 
 from flask import Flask, render_template, jsonify, request
+from flask_cors import CORS
 import math
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
+CORS(app)
 
 # SLA 等级预设配置
 SLA_LEVELS = {
@@ -143,16 +146,16 @@ def index():
 @app.route('/api/calculate', methods=['POST'])
 def calculate():
     """根据正常运行时间百分比计算停机时间"""
-    data = request.get_json()
-    uptime = float(data.get('uptime', 99.9))
+    try:
+        data = request.get_json() or {}
+        uptime = float(data.get('uptime', 99.9))
+        if not (0 <= uptime <= 100):
+            return jsonify({'error': '百分比必须在 0-100 之间'}), 400
+    except (ValueError, TypeError):
+        return jsonify({'error': '无效的数值输入'}), 400
 
     downtime = calculate_downtime(uptime)
-
-    return jsonify({
-        'uptime': uptime,
-        'downtime': downtime,
-        'sla_level': get_closest_sla_level(uptime)
-    })
+    return jsonify({'uptime': uptime, 'downtime': downtime, 'sla_level': get_closest_sla_level(uptime)})
 
 
 @app.route('/api/sla-levels')
@@ -164,29 +167,30 @@ def sla_levels():
 @app.route('/api/compare', methods=['POST'])
 def compare():
     """比较多个 SLA 等级"""
-    data = request.get_json()
-    levels = data.get('levels', [99.9, 99.99, 99.999])
+    try:
+        data = request.get_json() or {}
+        levels = [float(l) for l in data.get('levels', [99.9, 99.99, 99.999])]
+    except (ValueError, TypeError):
+        return jsonify({'error': '无效的数值输入'}), 400
 
     results = []
     for level in levels:
         downtime = calculate_downtime(level)
         sla_info = get_closest_sla_level(level)
-        results.append({
-            'level': level,
-            'name': sla_info.get('name', f'{level}%'),
-            'downtime': downtime
-        })
-
+        results.append({'level': level, 'name': sla_info.get('name', f'{level}%'), 'downtime': downtime})
     return jsonify(results)
 
 
 @app.route('/api/credit', methods=['POST'])
 def credit():
     """计算 SLA 赔偿"""
-    data = request.get_json()
-    sla_level = float(data.get('sla_level', 99.9))
-    actual_uptime = float(data.get('actual_uptime', 99.5))
-    monthly_fee = float(data.get('monthly_fee', 100))
+    try:
+        data = request.get_json() or {}
+        sla_level = float(data.get('sla_level', 99.9))
+        actual_uptime = float(data.get('actual_uptime', 99.5))
+        monthly_fee = float(data.get('monthly_fee', 100))
+    except (ValueError, TypeError):
+        return jsonify({'error': '无效的数值输入'}), 400
 
     result = calculate_sla_credit(sla_level, actual_uptime, monthly_fee)
 
@@ -203,9 +207,12 @@ def credit():
 @app.route('/api/actual-uptime', methods=['POST'])
 def actual_uptime():
     """根据总时间和停机时间计算实际正常运行时间"""
-    data = request.get_json()
-    total_minutes = float(data.get('total_minutes', 43200))  # 默认30天
-    downtime_minutes = float(data.get('downtime_minutes', 0))
+    try:
+        data = request.get_json() or {}
+        total_minutes = float(data.get('total_minutes', 43200))
+        downtime_minutes = float(data.get('downtime_minutes', 0))
+    except (ValueError, TypeError):
+        return jsonify({'error': '无效的数值输入'}), 400
 
     uptime_pct = calculate_actual_uptime(total_minutes, downtime_minutes)
 

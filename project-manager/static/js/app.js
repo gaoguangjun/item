@@ -93,6 +93,9 @@ function switchTab(tab) {
     if (tab === 'sysprocesses') {
         loadSysProcesses();
     }
+    if (tab === 'services') {
+        loadServices();
+    }
 }
 
 // 初始化搜索
@@ -677,4 +680,468 @@ function formatDateTime(isoStr) {
             minute: '2-digit'
         });
     }
+}
+
+// ========== Dashboard 功能 ==========
+
+async function loadDashboard() {
+    try {
+        const response = await fetch('/api/stats');
+        const stats = await response.json();
+
+        document.getElementById('stat-total').textContent = stats.total_projects || 0;
+        document.getElementById('stat-running').textContent = stats.running_projects || 0;
+        document.getElementById('stat-stopped').textContent = stats.stopped_projects || 0;
+        document.getElementById('stat-size').textContent = formatSize(stats.total_size || 0);
+
+        // 渲染项目类型分布
+        renderTypeDistribution(stats.project_types || {});
+
+        // 加载最近访问
+        loadRecentProjects();
+    } catch (error) {
+        console.error('加载仪表板失败:', error);
+    }
+}
+
+function renderTypeDistribution(types) {
+    const container = document.getElementById('type-distribution');
+    const total = Object.values(types).reduce((a, b) => a + b, 0);
+
+    if (total === 0) {
+        container.innerHTML = '<div class="empty-state"><span class="icon">📊</span><p>暂无项目数据</p></div>';
+        return;
+    }
+
+    const colors = {
+        python: '#3b82f6',
+        node: '#22c55e',
+        java: '#f97316',
+        go: '#06b6d4',
+        rust: '#ef4444',
+        git: '#f59e0b',
+        generic: '#6b7280'
+    };
+
+    container.innerHTML = Object.entries(types)
+        .sort((a, b) => b[1] - a[1])
+        .map(([type, count]) => {
+            const percent = (count / total * 100).toFixed(1);
+            const color = colors[type] || '#888';
+            return `
+                <div class="type-item">
+                    <span class="type-label">${type}</span>
+                    <div class="type-bar">
+                        <div class="type-fill" style="width: ${percent}%; background: ${color};"></div>
+                    </div>
+                    <span class="type-count">${count}</span>
+                </div>
+            `;
+        }).join('');
+}
+
+async function loadRecentProjects() {
+    try {
+        const response = await fetch('/api/recent');
+        const recent = await response.json();
+
+        const container = document.getElementById('recent-projects');
+
+        if (!recent || recent.length === 0) {
+            container.innerHTML = '<div class="empty-state"><span class="icon">🕐</span><p>暂无最近访问记录</p></div>';
+            return;
+        }
+
+        container.innerHTML = recent.map(r => `
+            <div class="item-card" data-path="${jsonEscape(r.path)}">
+                <div class="item-header">
+                    <span class="item-name">${escapeHtml(r.name)}</span>
+                </div>
+                <div class="item-path">${escapeHtml(r.path)}</div>
+                <div class="item-meta">
+                    <span>🕐 ${formatDateTime(r.visited_at)}</span>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('加载最近访问失败:', error);
+    }
+}
+
+// 批量启动所有项目
+async function batchStartAll() {
+    if (!confirm('确定要启动所有项目吗？')) return;
+
+    const paths = projects.filter(p => !p.running).map(p => p.path);
+    if (paths.length === 0) {
+        showToast('没有需要启动的项目', 'warning');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/batch/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paths })
+        });
+        const result = await response.json();
+
+        showToast(`已启动 ${result.started} 个项目，失败 ${result.failed} 个`, result.success ? 'success' : 'error');
+        await loadAllData();
+    } catch (error) {
+        showToast('批量启动失败', 'error');
+    }
+}
+
+// 批量停止所有项目
+async function batchStopAll() {
+    if (!confirm('确定要停止所有运行中的项目吗？')) return;
+
+    const paths = projects.filter(p => p.running).map(p => p.path);
+    if (paths.length === 0) {
+        showToast('没有运行中的项目', 'warning');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/batch/stop', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paths })
+        });
+        const result = await response.json();
+
+        showToast(`已停止 ${result.stopped} 个项目，失败 ${result.failed} 个`, result.success ? 'success' : 'error');
+        await loadAllData();
+    } catch (error) {
+        showToast('批量停止失败', 'error');
+    }
+}
+
+// ========== 收藏功能 ==========
+
+async function loadFavorites() {
+    try {
+        const response = await fetch('/api/favorites');
+        const favorites = await response.json();
+
+        const container = document.getElementById('favorites-list');
+
+        if (!favorites || favorites.length === 0) {
+            container.innerHTML = '<div class="empty-state"><span class="icon">⭐</span><p>暂无收藏项目<br>点击项目详情中的收藏按钮添加</p></div>';
+            return;
+        }
+
+        container.innerHTML = favorites.map(f => `
+            <div class="item-card" data-path="${jsonEscape(f.path)}">
+                <div class="item-header">
+                    <span class="item-name">${escapeHtml(f.name)}</span>
+                    <button class="btn btn-danger" style="padding: 4px 8px; font-size: 11px;" onclick="removeFavorite('${jsonEscape(f.path)}')">取消收藏</button>
+                </div>
+                <div class="item-path">${escapeHtml(f.path)}</div>
+                <div class="item-meta">
+                    <span>⭐ 收藏于 ${formatDateTime(f.added_at)}</span>
+                </div>
+                <div class="item-controls">
+                    <button class="btn btn-primary btn-detail" onclick="showProjectDetail('${jsonEscape(f.path)}')">
+                        <span class="icon">ℹ</span> 详情
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('加载收藏失败:', error);
+    }
+}
+
+async function addFavorite(path, name) {
+    try {
+        const response = await fetch('/api/favorites', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path, name })
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            showToast('已添加到收藏', 'success');
+        } else {
+            showToast(result.error || '添加失败', 'error');
+        }
+    } catch (error) {
+        showToast('添加收藏失败', 'error');
+    }
+}
+
+async function removeFavorite(path) {
+    try {
+        const response = await fetch('/api/favorites', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path })
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            showToast('已取消收藏', 'success');
+            loadFavorites();
+        }
+    } catch (error) {
+        showToast('取消收藏失败', 'error');
+    }
+}
+
+// ========== 设置功能 ==========
+
+async function loadSettings() {
+    try {
+        const response = await fetch('/api/config');
+        const config = await response.json();
+
+        document.getElementById('setting-root-path').value = config.root_path || '';
+        document.getElementById('setting-refresh-interval').value = (config.refresh_interval || 5000) / 1000;
+        document.getElementById('setting-theme').value = config.theme || 'dark';
+    } catch (error) {
+        console.error('加载设置失败:', error);
+    }
+}
+
+async function saveRootPath() {
+    const path = document.getElementById('setting-root-path').value.trim();
+    if (!path) {
+        showToast('请输入有效的路径', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ root_path: path })
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            showToast('扫描目录已更新，请刷新页面', 'success');
+        } else {
+            showToast('保存失败', 'error');
+        }
+    } catch (error) {
+        showToast('保存失败', 'error');
+    }
+}
+
+async function saveRefreshInterval() {
+    const interval = parseInt(document.getElementById('setting-refresh-interval').value);
+    if (interval < 1 || interval > 60) {
+        showToast('请输入1-60之间的数值', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refresh_interval: interval * 1000 })
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            showToast('刷新间隔已更新', 'success');
+        } else {
+            showToast('保存失败', 'error');
+        }
+    } catch (error) {
+        showToast('保存失败', 'error');
+    }
+}
+
+async function saveTheme() {
+    const theme = document.getElementById('setting-theme').value;
+
+    try {
+        const response = await fetch('/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ theme })
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            showToast('主题已更新，请刷新页面', 'success');
+        } else {
+            showToast('保存失败', 'error');
+        }
+    } catch (error) {
+        showToast('保存失败', 'error');
+    }
+}
+
+async function resetConfig() {
+    if (!confirm('确定要重置所有设置吗？这将清除所有配置。')) return;
+
+    try {
+        const response = await fetch('/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                root_path: ROOT_PATH,
+                refresh_interval: 5000,
+                theme: 'dark',
+                favorites: [],
+                recent_projects: []
+            })
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            showToast('配置已重置，请刷新页面', 'success');
+        } else {
+            showToast('重置失败', 'error');
+        }
+    } catch (error) {
+        showToast('重置失败', 'error');
+    }
+}
+
+// ========== 扩展事件初始化 ==========
+
+// 在现有的 initEventDelegation 函数中添加批量操作按钮的事件
+document.getElementById('batch-start-all')?.addEventListener('click', batchStartAll);
+document.getElementById('batch-stop-all')?.addEventListener('click', batchStopAll);
+document.getElementById('batch-refresh')?.addEventListener('click', loadAllData);
+
+// 设置按钮事件
+document.getElementById('save-root-path')?.addEventListener('click', saveRootPath);
+document.getElementById('save-refresh-interval')?.addEventListener('click', saveRefreshInterval);
+document.getElementById('save-theme')?.addEventListener('click', saveTheme);
+document.getElementById('reset-config')?.addEventListener('click', resetConfig);
+
+// 更新 switchTab 函数以处理新标签页
+const originalSwitchTab = switchTab;
+switchTab = function(tab) {
+    originalSwitchTab.call(this, tab);
+
+    // 根据标签页加载相应数据
+    switch(tab) {
+        case 'dashboard':
+            loadDashboard();
+            break;
+        case 'favorites':
+            loadFavorites();
+            break;
+        case 'settings':
+            loadSettings();
+            break;
+        case 'sysprocesses':
+            loadSysProcesses();
+            break;
+    }
+};
+
+// 页面加载时默认加载仪表板
+window.addEventListener('load', () => {
+    // 延迟加载，确保其他初始化完成
+    setTimeout(() => {
+        if (currentTab === 'dashboard') {
+            loadDashboard();
+        }
+    }, 500);
+});
+
+// ========== Services Dashboard ==========
+
+async function loadServices() {
+    const grid = document.getElementById('services-grid');
+    if (!grid) return;
+
+    try {
+        const res = await fetch('/api/services');
+        const services = await res.json();
+
+        grid.innerHTML = services.map(svc => `
+            <div class="service-card" data-id="${svc.id}">
+                <div class="svc-header">
+                    <div class="svc-icon" style="background:${svc.color}">${svc.icon}</div>
+                    <div class="svc-info">
+                        <h3>${svc.name}</h3>
+                        <p>${svc.description}</p>
+                    </div>
+                </div>
+                <div class="svc-status">
+                    <span class="dot ${svc.running ? 'running' : 'stopped'}"></span>
+                    <span>${svc.running ? '运行中' : '已停止'}</span>
+                    <span style="margin-left:auto;color:var(--text-muted)">端口 ${svc.port}</span>
+                </div>
+                <div class="svc-actions">
+                    ${svc.running ? `
+                        <button class="btn btn-primary" onclick="openService('${svc.id}')">打开</button>
+                        <button class="btn btn-danger" onclick="stopService('${svc.id}')">停止</button>
+                    ` : `
+                        <button class="btn btn-primary" onclick="startService('${svc.id}')">启动</button>
+                        <button class="btn btn-secondary" onclick="openFolder('${svc.path}')">目录</button>
+                    `}
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        grid.innerHTML = '<div class="loading">加载服务列表失败</div>';
+    }
+}
+
+async function startService(id) {
+    try {
+        const res = await fetch(`/api/services/${id}/start`, {method: 'POST'});
+        const data = await res.json();
+        if (data.success) {
+            showToast('服务启动中...');
+            setTimeout(loadServices, 2000);
+        } else {
+            showToast(data.error || '启动失败');
+        }
+    } catch (e) {
+        showToast('启动请求失败');
+    }
+}
+
+async function stopService(id) {
+    try {
+        const res = await fetch(`/api/services/${id}/stop`, {method: 'POST'});
+        const data = await res.json();
+        if (data.success) {
+            showToast('服务已停止');
+            setTimeout(loadServices, 1000);
+        } else {
+            showToast(data.error || '停止失败');
+        }
+    } catch (e) {
+        showToast('停止请求失败');
+    }
+}
+
+async function openService(id) {
+    try {
+        await fetch(`/api/services/${id}/open`, {method: 'POST'});
+    } catch (e) {}
+}
+
+function openFolder(path) {
+    fetch('/api/open', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({path})
+    });
+}
+
+function showToast(msg) {
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#6366f1;color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.style.opacity = '1';
+    setTimeout(() => toast.style.opacity = '0', 2500);
 }
